@@ -84,10 +84,10 @@ namespace Droste
             int total_alpha = original.A + addition_alpha;
             double orig_frac = original.A / (double) total_alpha;
             double add_frac = addition_alpha / (double) total_alpha;
-            return ColorBgra.FromBgra(Utility.ClampToByte(original.B * orig_frac + addition.B * add_frac),
-                                      Utility.ClampToByte(original.G * orig_frac + addition.G * add_frac),
-                                      Utility.ClampToByte(original.R * orig_frac + addition.R * add_frac),
-                                      Utility.ClampToByte(total_alpha));
+            return ColorBgra.FromBgra(Int32Util.ClampToByte((int)(original.B * orig_frac + addition.B * add_frac)),
+                                      Int32Util.ClampToByte((int)(original.G * orig_frac + addition.G * add_frac)),
+                                      Int32Util.ClampToByte((int)(original.R * orig_frac + addition.R * add_frac)),
+                                      Int32Util.ClampToByte(total_alpha));
         }
 
         // My own version of NaturalLogarithm() that doesn't create a special case for real numbers
