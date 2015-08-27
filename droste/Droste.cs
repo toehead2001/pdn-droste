@@ -19,11 +19,11 @@ namespace Droste
             }
         }
 
-        public static Bitmap StaticIcon
+        public static Image StaticIcon
         {
             get
             {
-                return Droste.Properties.Resources.Droste;
+                return Properties.Resources.Droste;
             }
         }
 
@@ -35,34 +35,35 @@ namespace Droste
             }
         }
 
-        public enum PropertyNames
-        {
-            InnerRadius,
-            OuterRadius,
-            Center,
-            InverseTransparency,
-            RepeatPerTurn,
-            AngleCorrection
-        }
-
         public DrosteFx()
             : base(StaticName, StaticIcon, StaticSubMenuName, EffectFlags.Configurable)
         {
+        }
 
+        public enum PropertyNames
+        {
+            Amount1,
+            Amount2,
+            Amount3,
+            Amount4,
+            Amount5,
+            Amount6
         }
 
         protected override PropertyCollection OnCreatePropertyCollection()
         {
             List<Property> props = new List<Property>();
-            props.Add(new DoubleProperty(PropertyNames.InnerRadius, 0.05, 0.01, 1.00));
-            props.Add(new DoubleProperty(PropertyNames.OuterRadius, 0.25, 0.01, 1.00));
-            props.Add(new DoubleVectorProperty(PropertyNames.Center
+
+            props.Add(new DoubleProperty(PropertyNames.Amount1, 0.05, 0.01, 1.00));
+            props.Add(new DoubleProperty(PropertyNames.Amount2, 0.25, 0.01, 1.00));
+            props.Add(new DoubleVectorProperty(PropertyNames.Amount3
                                              , Pair.Create(0.0, 0.0)
                                              , Pair.Create(-2.0, -2.0)
                                              , Pair.Create(+2.0, +2.0)));
-            props.Add(new BooleanProperty(PropertyNames.InverseTransparency, true));
-            props.Add(new Int32Property(PropertyNames.RepeatPerTurn, 1, 1, 10));
-            props.Add(new DoubleProperty(PropertyNames.AngleCorrection, 0, -180, +180));
+            props.Add(new BooleanProperty(PropertyNames.Amount4, true));
+            props.Add(new Int32Property(PropertyNames.Amount5, 1, 1, 10));
+            props.Add(new DoubleProperty(PropertyNames.Amount6, 0, -180, +180));
+
             return new PropertyCollection(props);
         }
 
@@ -70,11 +71,63 @@ namespace Droste
         {
             ControlInfo configUI = CreateDefaultConfigUI(props);
 
-            configUI.SetPropertyControlValue(PropertyNames.AngleCorrection, ControlInfoPropertyNames.DisplayName, "Angle Correction");
-            configUI.SetPropertyControlType(PropertyNames.AngleCorrection, PropertyControlType.AngleChooser);
+            configUI.SetPropertyControlValue(PropertyNames.Amount1, ControlInfoPropertyNames.DisplayName, "Inner Radius");
+            configUI.SetPropertyControlValue(PropertyNames.Amount1, ControlInfoPropertyNames.SliderLargeChange, 0.25);
+            configUI.SetPropertyControlValue(PropertyNames.Amount1, ControlInfoPropertyNames.SliderSmallChange, 0.05);
+            configUI.SetPropertyControlValue(PropertyNames.Amount1, ControlInfoPropertyNames.UpDownIncrement, 0.01);
+            configUI.SetPropertyControlValue(PropertyNames.Amount2, ControlInfoPropertyNames.DisplayName, "Outer Radius");
+            configUI.SetPropertyControlValue(PropertyNames.Amount2, ControlInfoPropertyNames.SliderLargeChange, 0.25);
+            configUI.SetPropertyControlValue(PropertyNames.Amount2, ControlInfoPropertyNames.SliderSmallChange, 0.05);
+            configUI.SetPropertyControlValue(PropertyNames.Amount2, ControlInfoPropertyNames.UpDownIncrement, 0.01);
+            configUI.SetPropertyControlValue(PropertyNames.Amount3, ControlInfoPropertyNames.DisplayName, "Center");
+            configUI.SetPropertyControlValue(PropertyNames.Amount3, ControlInfoPropertyNames.SliderSmallChangeX, 0.05);
+            configUI.SetPropertyControlValue(PropertyNames.Amount3, ControlInfoPropertyNames.SliderLargeChangeX, 0.25);
+            configUI.SetPropertyControlValue(PropertyNames.Amount3, ControlInfoPropertyNames.UpDownIncrementX, 0.01);
+            configUI.SetPropertyControlValue(PropertyNames.Amount3, ControlInfoPropertyNames.SliderSmallChangeY, 0.05);
+            configUI.SetPropertyControlValue(PropertyNames.Amount3, ControlInfoPropertyNames.SliderLargeChangeY, 0.25);
+            configUI.SetPropertyControlValue(PropertyNames.Amount3, ControlInfoPropertyNames.UpDownIncrementY, 0.01);
+            Rectangle selection3 = EnvironmentParameters.GetSelection(EnvironmentParameters.SourceSurface.Bounds).GetBoundsInt();
+            ImageResource imageResource3 = ImageResource.FromImage(EnvironmentParameters.SourceSurface.CreateAliasedBitmap(selection3));
+            configUI.SetPropertyControlValue(PropertyNames.Amount3, ControlInfoPropertyNames.StaticImageUnderlay, imageResource3);
+            configUI.SetPropertyControlValue(PropertyNames.Amount4, ControlInfoPropertyNames.DisplayName, "Inverse Transparency");
+            configUI.SetPropertyControlValue(PropertyNames.Amount4, ControlInfoPropertyNames.Description, "Inverse Transparency");
+            configUI.SetPropertyControlValue(PropertyNames.Amount5, ControlInfoPropertyNames.DisplayName, "Repeat Per Turn");
+            configUI.SetPropertyControlValue(PropertyNames.Amount6, ControlInfoPropertyNames.DisplayName, "Angle Correction");
+            configUI.SetPropertyControlType(PropertyNames.Amount6, PropertyControlType.AngleChooser);
 
             return configUI;
         }
+
+        protected override void OnSetRenderInfo(PropertyBasedEffectConfigToken newToken, RenderArgs dstArgs, RenderArgs srcArgs)
+        {
+            Rectangle selection = EnvironmentParameters.GetSelection(srcArgs.Bounds).GetBoundsInt();
+            double rmax = Math.Max(selection.Height, selection.Width);
+
+            Amount1 = newToken.GetProperty<DoubleProperty>(PropertyNames.Amount1).Value * rmax;
+            Amount2 = newToken.GetProperty<DoubleProperty>(PropertyNames.Amount2).Value * rmax;
+            Amount3 = newToken.GetProperty<DoubleVectorProperty>(PropertyNames.Amount3).Value;
+            Amount4 = newToken.GetProperty<BooleanProperty>(PropertyNames.Amount4).Value;
+            Amount5 = newToken.GetProperty<Int32Property>(PropertyNames.Amount5).Value;
+            Amount6 = newToken.GetProperty<DoubleProperty>(PropertyNames.Amount6).Value;
+
+            base.OnSetRenderInfo(newToken, dstArgs, srcArgs);
+        }
+
+        protected override unsafe void OnRender(Rectangle[] rois, int startIndex, int length)
+        {
+            if (length == 0) return;
+            for (int i = startIndex; i < startIndex + length; ++i)
+            {
+                Render(DstArgs.Surface, SrcArgs.Surface, rois[i]);
+            }
+        }
+
+        double Amount1 = 0.05;
+        double Amount2 = 0.25;
+        Pair<double, double> Amount3 = Pair.Create(0.0, 0.0);
+        bool Amount4 = true;
+        int Amount5 = 1;
+        double Amount6 = 0;
 
         public static ColorBgra AddColor(ColorBgra original, ColorBgra addition)
         {
@@ -102,34 +155,13 @@ namespace Droste
             return Complex.FromRealImaginary(0.5d * Math.Log(input.ModulusSquared), input.Argument);
         }
 
-        private double r1;
-        private double r2;
-        private Pair<double, double> center;
-        private bool inverse_transparency;
-        private int repeat_per_turn;
-        private double anglecorrection = 0;
-
-        protected override void OnSetRenderInfo(PropertyBasedEffectConfigToken newToken, RenderArgs dstArgs, RenderArgs srcArgs)
+        void Render(Surface dst, Surface src, Rectangle rect)
         {
-            Rectangle selection = EnvironmentParameters.GetSelection(srcArgs.Bounds).GetBoundsInt();
-            double rmax = Math.Max(selection.Height, selection.Width);
-            this.r1 = newToken.GetProperty<DoubleProperty>(PropertyNames.InnerRadius).Value * rmax;
-            this.r2 = newToken.GetProperty<DoubleProperty>(PropertyNames.OuterRadius).Value * rmax;
-            this.center = newToken.GetProperty<DoubleVectorProperty>(PropertyNames.Center).Value;
-            this.inverse_transparency = newToken.GetProperty<BooleanProperty>(PropertyNames.InverseTransparency).Value;
-            this.repeat_per_turn = newToken.GetProperty<Int32Property>(PropertyNames.RepeatPerTurn).Value;
-            this.anglecorrection = newToken.GetProperty<DoubleProperty>(PropertyNames.AngleCorrection).Value;
-            base.OnSetRenderInfo(newToken, dstArgs, srcArgs);
-        }
+            Rectangle selection = EnvironmentParameters.GetSelection(src.Bounds).GetBoundsInt();
+            long CenterX = (long)((1.0 + Amount3.First) * ((selection.Right - selection.Left) / 2) + selection.Left);
+            long CenterY = (long)((1.0 + Amount3.Second) * ((selection.Bottom - selection.Top) / 2) + selection.Top);
 
-        protected override void  OnRender(Rectangle[] rois, int startIndex, int length)
-        {  
-            PdnRegion selectionRegion = EnvironmentParameters.GetSelection(SrcArgs.Bounds);
-            Rectangle selection = selectionRegion.GetBoundsInt();
-            long CenterX = (long)((1.0 + center.First) * ((selection.Right - selection.Left) / 2) + selection.Left);
-            long CenterY = (long)((1.0 + center.Second) * ((selection.Bottom - selection.Top) / 2) + selection.Top);
-
-            double rfrac = Math.Log(r2 / r1);
+            double rfrac = Math.Log(Amount2 / Amount1);
             double alpha = Math.Atan2(rfrac, Math.PI * 2);
             double f = Math.Cos(alpha);
             Complex ialpha = Complex.FromRealImaginary(0, alpha);
@@ -145,58 +177,54 @@ namespace Droste
 
             float rotatedX;
             float rotatedY;
-            double angle = anglecorrection * Math.PI / 180.0;
+            double angle = Amount6 * Math.PI / 180.0;
             double cos = Math.Cos(angle);
             double sin = Math.Sin(angle);
 
             ColorBgra result;
 
-            for (int i = startIndex; i < startIndex + length; ++i)
+            for (int y = rect.Top; y < rect.Bottom; ++y)
             {
-                Rectangle rect = rois[i];
-
-                for (int y = rect.Top; y < rect.Bottom; ++y)
+                if (IsCancelRequested) return;
+                for (int x = rect.Left; x < rect.Right; ++x)
                 {
-                    for (int x = rect.Left; x < rect.Right; ++x)
+                    zout = Complex.FromRealImaginary(x - CenterX, CenterY - y);
+                    result = ColorBgra.Zero;
+
+                    // see algorithm description here : http://www.josleys.com/articles/printgallery.htm
+
+                    // inverse step 3 and inverse step 2 ==> output after step 1
+                    ztemp1 = MyNaturalLogarithm(zout) / beta;
+
+                    for (int layer = 0; layer < 3 && result.A < 255; layer++)
                     {
-                        zout = Complex.FromRealImaginary(x - CenterX, CenterY - y);
-                        result = ColorBgra.Zero;
-
-                        // see algorithm description here : http://www.josleys.com/articles/printgallery.htm
-
-                        // inverse step 3 and inverse step 2 ==> output after step 1
-                        ztemp1 = MyNaturalLogarithm(zout) / beta;
-
-                        for (int layer = 0; layer < 3 && result.A < 255; layer++)
+                        // convert to a point with real part inside [0 , log (r1/r2)]
+                        // combine with data in [log (r1/r2), 2 * log (r1/r2)] if not opaque
+                        // maybe even go to the part after that etc...
+                        double rtemp = 0;
+                        if (Amount4)
                         {
-                            // convert to a point with real part inside [0 , log (r1/r2)]
-                            // combine with data in [log (r1/r2), 2 * log (r1/r2)] if not opaque
-                            // maybe even go to the part after that etc...
-                            double rtemp = 0;
-                            if (inverse_transparency)
-                            {
-                                rtemp = ztemp1.Real % rfrac + (2 - layer) * rfrac;
-                            }
-                            else
-                            {
-                                rtemp = ztemp1.Real % rfrac + layer * rfrac;
-                            }
-
-                            ztemp2 = Complex.FromRealImaginary(rtemp, ztemp1.Imag * repeat_per_turn);
-
-                            // inverse step 1
-                            zin = r1 * ztemp2.Exponential();
-
-                            from_x = (float)(zin.Real + CenterX);
-                            from_y = (float)(CenterY - zin.Imag);
-
-                            rotatedX = (float)((from_x - CenterX) * cos - (from_y - CenterY) * sin + CenterX);
-                            rotatedY = (float)((from_y - CenterY) * cos - (from_x - CenterX) * -1.0 * sin + CenterY);
-
-                            result = AddColor(result, SrcArgs.Surface.GetBilinearSample(rotatedX, rotatedY));
+                            rtemp = ztemp1.Real % rfrac + (2 - layer) * rfrac;
                         }
-                        DstArgs.Surface[x, y] = result;
+                        else
+                        {
+                            rtemp = ztemp1.Real % rfrac + layer * rfrac;
+                        }
+
+                        ztemp2 = Complex.FromRealImaginary(rtemp, ztemp1.Imag * Amount5);
+
+                        // inverse step 1
+                        zin = Amount1 * ztemp2.Exponential();
+
+                        from_x = (float)(zin.Real + CenterX);
+                        from_y = (float)(CenterY - zin.Imag);
+
+                        rotatedX = (float)((from_x - CenterX) * cos - (from_y - CenterY) * sin + CenterX);
+                        rotatedY = (float)((from_y - CenterY) * cos - (from_x - CenterX) * -1.0 * sin + CenterY);
+
+                        result = AddColor(result, src.GetBilinearSample(rotatedX, rotatedY));
                     }
+                    dst[x, y] = result;
                 }
             }
         }
