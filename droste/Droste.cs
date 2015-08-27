@@ -41,7 +41,8 @@ namespace Droste
             OuterRadius,
             Center,
             InverseTransparency,
-            RepeatPerTurn
+            RepeatPerTurn,
+            AngleCorrection
         }
 
         public DrosteFx()
@@ -61,12 +62,17 @@ namespace Droste
                                              , Pair.Create(+2.0, +2.0)));
             props.Add(new BooleanProperty(PropertyNames.InverseTransparency, true));
             props.Add(new Int32Property(PropertyNames.RepeatPerTurn, 1, 1, 10));
+            props.Add(new DoubleProperty(PropertyNames.AngleCorrection, 0, -180, +180));
             return new PropertyCollection(props);
         }
 
         protected override ControlInfo OnCreateConfigUI(PropertyCollection props)
         {
             ControlInfo configUI = CreateDefaultConfigUI(props);
+
+            configUI.SetPropertyControlValue(PropertyNames.AngleCorrection, ControlInfoPropertyNames.DisplayName, "Angle Correction");
+            configUI.SetPropertyControlType(PropertyNames.AngleCorrection, PropertyControlType.AngleChooser);
+
             return configUI;
         }
 
@@ -101,7 +107,8 @@ namespace Droste
         private Pair<double, double> center;
         private bool inverse_transparency;
         private int repeat_per_turn;
-        
+        private double anglecorrection = 0;
+
         protected override void OnSetRenderInfo(PropertyBasedEffectConfigToken newToken, RenderArgs dstArgs, RenderArgs srcArgs)
         {
             Rectangle selection = EnvironmentParameters.GetSelection(srcArgs.Bounds).GetBoundsInt();
@@ -111,6 +118,7 @@ namespace Droste
             this.center = newToken.GetProperty<DoubleVectorProperty>(PropertyNames.Center).Value;
             this.inverse_transparency = newToken.GetProperty<BooleanProperty>(PropertyNames.InverseTransparency).Value;
             this.repeat_per_turn = newToken.GetProperty<Int32Property>(PropertyNames.RepeatPerTurn).Value;
+            this.anglecorrection = newToken.GetProperty<DoubleProperty>(PropertyNames.AngleCorrection).Value;
             base.OnSetRenderInfo(newToken, dstArgs, srcArgs);
         }
 
@@ -134,6 +142,12 @@ namespace Droste
 
             float from_x;
             float from_y;
+
+            float rotatedX;
+            float rotatedY;
+            double angle = anglecorrection * Math.PI / 180.0;
+            double cos = Math.Cos(angle);
+            double sin = Math.Sin(angle);
 
             ColorBgra result;
 
@@ -176,7 +190,10 @@ namespace Droste
                             from_x = (float)(zin.Real + CenterX);
                             from_y = (float)(CenterY - zin.Imag);
 
-                            result = AddColor(result, SrcArgs.Surface.GetBilinearSample(from_x, from_y));
+                            rotatedX = (float)((from_x - CenterX) * cos - (from_y - CenterY) * sin + CenterX);
+                            rotatedY = (float)((from_y - CenterY) * cos - (from_x - CenterX) * -1.0 * sin + CenterY);
+
+                            result = AddColor(result, SrcArgs.Surface.GetBilinearSample(rotatedX, rotatedY));
                         }
                         DstArgs.Surface[x, y] = result;
                     }
