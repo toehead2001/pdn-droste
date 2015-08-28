@@ -52,7 +52,7 @@ namespace Droste
         }
     }
 
-    [PluginSupportInfo(typeof(PluginSupportInfo), DisplayName = "Blur Fill")]
+    [PluginSupportInfo(typeof(PluginSupportInfo), DisplayName = "Droste")]
 
 	public class DrosteFx : PropertyBasedEffect
     {
