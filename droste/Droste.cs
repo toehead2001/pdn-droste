@@ -68,7 +68,7 @@ namespace Droste
         {
             get
             {
-                return Properties.Resources.Droste;
+                return new Bitmap(typeof(DrosteFx), "Droste.png");
             }
         }
 
