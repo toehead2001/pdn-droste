@@ -12,76 +12,21 @@ namespace Droste
 {
     public class PluginSupportInfo : IPluginSupportInfo
     {
-        public string Author
-        {
-            get
-            {
-                return ((AssemblyCopyrightAttribute)base.GetType().Assembly.GetCustomAttributes(typeof(AssemblyCopyrightAttribute), false)[0]).Copyright;
-            }
-        }
-        public string Copyright
-        {
-            get
-            {
-                return ((AssemblyDescriptionAttribute)base.GetType().Assembly.GetCustomAttributes(typeof(AssemblyDescriptionAttribute), false)[0]).Description;
-            }
-        }
-
-        public string DisplayName
-        {
-            get
-            {
-                return ((AssemblyProductAttribute)base.GetType().Assembly.GetCustomAttributes(typeof(AssemblyProductAttribute), false)[0]).Product;
-            }
-        }
-
-        public Version Version
-        {
-            get
-            {
-                return base.GetType().Assembly.GetName().Version;
-            }
-        }
-
-        public Uri WebsiteUri
-        {
-            get
-            {
-                return new Uri("http://www.getpaint.net/redirect/plugins.html");
-            }
-        }
+        public string Author => ((AssemblyCopyrightAttribute)base.GetType().Assembly.GetCustomAttributes(typeof(AssemblyCopyrightAttribute), false)[0]).Copyright;
+        public string Copyright => ((AssemblyDescriptionAttribute)base.GetType().Assembly.GetCustomAttributes(typeof(AssemblyDescriptionAttribute), false)[0]).Description;
+        public string DisplayName => ((AssemblyProductAttribute)base.GetType().Assembly.GetCustomAttributes(typeof(AssemblyProductAttribute), false)[0]).Product;
+        public Version Version => base.GetType().Assembly.GetName().Version;
+        public Uri WebsiteUri => new Uri("http://www.getpaint.net/redirect/plugins.html");
     }
 
     [PluginSupportInfo(typeof(PluginSupportInfo), DisplayName = "Droste")]
-
-	public class DrosteFx : PropertyBasedEffect
+    public class DrosteFx : PropertyBasedEffect
     {
-        public static string StaticName
-        {
-            get
-            {
-                return "Droste";
-            }
-        }
-
-        public static Image StaticIcon
-        {
-            get
-            {
-                return new Bitmap(typeof(DrosteFx), "Droste.png");
-            }
-        }
-
-        public static string StaticSubMenuName
-        {
-            get
-            {
-                return SubmenuNames.Distort;
-            }
-        }
+        private const string StaticName = "Droste";
+        private static readonly Image StaticIcon = new Bitmap(typeof(DrosteFx), "Droste.png");
 
         public DrosteFx()
-            : base(StaticName, StaticIcon, StaticSubMenuName, EffectFlags.Configurable)
+            : base(StaticName, StaticIcon, SubmenuNames.Distort, EffectFlags.Configurable)
         {
         }
 
@@ -184,10 +129,10 @@ namespace Droste
             {
                 return addition;
             }
-            byte addition_alpha = Math.Min(addition.A, (byte) (255 - original.A));
+            byte addition_alpha = Math.Min(addition.A, (byte)(255 - original.A));
             int total_alpha = original.A + addition_alpha;
-            double orig_frac = original.A / (double) total_alpha;
-            double add_frac = addition_alpha / (double) total_alpha;
+            double orig_frac = original.A / (double)total_alpha;
+            double add_frac = addition_alpha / (double)total_alpha;
             return ColorBgra.FromBgra(Int32Util.ClampToByte((int)(original.B * orig_frac + addition.B * add_frac)),
                                       Int32Util.ClampToByte((int)(original.G * orig_frac + addition.G * add_frac)),
                                       Int32Util.ClampToByte((int)(original.R * orig_frac + addition.R * add_frac)),
