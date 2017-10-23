@@ -23,7 +23,7 @@ namespace Droste
     public class DrosteFx : PropertyBasedEffect
     {
         private const string StaticName = "Droste";
-        private static readonly Image StaticIcon = new Bitmap(typeof(DrosteFx), "Droste.png");
+        private static readonly Image StaticIcon = new Bitmap(typeof(DrosteFx), "Resources.Droste.png");
 
         public DrosteFx()
             : base(StaticName, StaticIcon, SubmenuNames.Distort, EffectFlags.Configurable)

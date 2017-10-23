@@ -91,7 +91,7 @@
     <PostBuildEvent>copy "$(TargetPath)" "C:\Program Files\Paint.NET\Effects\"</PostBuildEvent>
   </PropertyGroup>
   <ItemGroup>
-    <None Include="Resources\Droste.png" />
+    <EmbeddedResource Include="Resources\Droste.png" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
