@@ -12,11 +12,11 @@ namespace Droste
 {
     public class PluginSupportInfo : IPluginSupportInfo
     {
-        public string Author => ((AssemblyCopyrightAttribute)base.GetType().Assembly.GetCustomAttributes(typeof(AssemblyCopyrightAttribute), false)[0]).Copyright;
-        public string Copyright => ((AssemblyDescriptionAttribute)base.GetType().Assembly.GetCustomAttributes(typeof(AssemblyDescriptionAttribute), false)[0]).Description;
-        public string DisplayName => ((AssemblyProductAttribute)base.GetType().Assembly.GetCustomAttributes(typeof(AssemblyProductAttribute), false)[0]).Product;
+        public string Author => base.GetType().Assembly.GetCustomAttribute<AssemblyCopyrightAttribute>().Copyright;
+        public string Copyright => base.GetType().Assembly.GetCustomAttribute<AssemblyDescriptionAttribute>().Description;
+        public string DisplayName => base.GetType().Assembly.GetCustomAttribute<AssemblyProductAttribute>().Product;
         public Version Version => base.GetType().Assembly.GetName().Version;
-        public Uri WebsiteUri => new Uri("http://www.getpaint.net/redirect/plugins.html");
+        public Uri WebsiteUri => new Uri("https://forums.getpaint.net/index.php?showtopic=32240");
     }
 
     [PluginSupportInfo(typeof(PluginSupportInfo), DisplayName = "Droste")]
@@ -42,17 +42,15 @@ namespace Droste
 
         protected override PropertyCollection OnCreatePropertyCollection()
         {
-            List<Property> props = new List<Property>();
-
-            props.Add(new DoubleProperty(PropertyNames.Amount1, 0.05, 0.01, 1.00));
-            props.Add(new DoubleProperty(PropertyNames.Amount2, 0.25, 0.01, 1.00));
-            props.Add(new DoubleVectorProperty(PropertyNames.Amount3
-                                             , Pair.Create(0.0, 0.0)
-                                             , Pair.Create(-2.0, -2.0)
-                                             , Pair.Create(+2.0, +2.0)));
-            props.Add(new BooleanProperty(PropertyNames.Amount4, true));
-            props.Add(new Int32Property(PropertyNames.Amount5, 1, 1, 10));
-            props.Add(new DoubleProperty(PropertyNames.Amount6, 0, -180, +180));
+            List<Property> props = new List<Property>
+            {
+                new DoubleProperty(PropertyNames.Amount1, 0.05, 0.01, 1.00),
+                new DoubleProperty(PropertyNames.Amount2, 0.25, 0.01, 1.00),
+                new DoubleVectorProperty(PropertyNames.Amount3, Pair.Create(0.0, 0.0), Pair.Create(-2.0, -2.0), Pair.Create(+2.0, +2.0)),
+                new BooleanProperty(PropertyNames.Amount4, true),
+                new Int32Property(PropertyNames.Amount5, 1, 1, 10),
+                new DoubleProperty(PropertyNames.Amount6, 0, -180, +180)
+            };
 
             return new PropertyCollection(props);
         }
@@ -103,21 +101,21 @@ namespace Droste
             base.OnSetRenderInfo(newToken, dstArgs, srcArgs);
         }
 
-        protected override void OnRender(Rectangle[] rois, int startIndex, int length)
+        protected override void OnRender(Rectangle[] renderRects, int startIndex, int length)
         {
             if (length == 0) return;
             for (int i = startIndex; i < startIndex + length; ++i)
             {
-                Render(DstArgs.Surface, SrcArgs.Surface, rois[i]);
+                Render(DstArgs.Surface, SrcArgs.Surface, renderRects[i]);
             }
         }
 
-        double Amount1 = 0.05;
-        double Amount2 = 0.25;
-        Pair<double, double> Amount3 = Pair.Create(0.0, 0.0);
-        bool Amount4 = true;
-        int Amount5 = 1;
-        double Amount6 = 0;
+        private double Amount1 = 0.05;
+        private double Amount2 = 0.25;
+        private Pair<double, double> Amount3 = Pair.Create(0.0, 0.0);
+        private bool Amount4 = true;
+        private int Amount5 = 1;
+        private double Amount6 = 0;
 
         public static ColorBgra AddColor(ColorBgra original, ColorBgra addition)
         {
@@ -145,7 +143,7 @@ namespace Droste
             return Complex.FromRealImaginary(0.5d * Math.Log(input.ModulusSquared), input.Argument);
         }
 
-        void Render(Surface dst, Surface src, Rectangle rect)
+        private void Render(Surface dst, Surface src, Rectangle rect)
         {
             Rectangle selection = EnvironmentParameters.GetSelection(src.Bounds).GetBoundsInt();
             long CenterX = (long)((1.0 + Amount3.First) * ((selection.Right - selection.Left) / 2) + selection.Left);
