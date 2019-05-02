@@ -25,7 +25,7 @@ namespace Droste
         private static readonly Image StaticIcon = new Bitmap(typeof(DrosteFx), "Resources.Droste.png");
 
         public DrosteFx()
-            : base(StaticName, StaticIcon, SubmenuNames.Distort, EffectFlags.Configurable)
+            : base(StaticName, StaticIcon, SubmenuNames.Distort, new EffectOptions { Flags = EffectFlags.Configurable })
         {
         }
 
