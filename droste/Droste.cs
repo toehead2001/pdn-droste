@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Drawing;
 using System.Reflection;
 using PaintDotNet;
@@ -131,10 +130,11 @@ namespace Droste
             int total_alpha = original.A + addition_alpha;
             double orig_frac = original.A / (double)total_alpha;
             double add_frac = addition_alpha / (double)total_alpha;
-            return ColorBgra.FromBgra(Int32Util.ClampToByte((int)(original.B * orig_frac + addition.B * add_frac)),
-                                      Int32Util.ClampToByte((int)(original.G * orig_frac + addition.G * add_frac)),
-                                      Int32Util.ClampToByte((int)(original.R * orig_frac + addition.R * add_frac)),
-                                      Int32Util.ClampToByte(total_alpha));
+            return ColorBgra.FromBgraClamped(
+                (int)(original.B * orig_frac + addition.B * add_frac),
+                (int)(original.G * orig_frac + addition.G * add_frac),
+                (int)(original.R * orig_frac + addition.R * add_frac),
+                total_alpha);
         }
 
         private void Render(Surface dst, Surface src, Rectangle rect)
@@ -183,15 +183,9 @@ namespace Droste
                         // convert to a point with real part inside [0 , log (r1/r2)]
                         // combine with data in [log (r1/r2), 2 * log (r1/r2)] if not opaque
                         // maybe even go to the part after that etc...
-                        double rtemp = 0;
-                        if (inverseAlpha)
-                        {
-                            rtemp = ztemp1.Real % rfrac + (2 - layer) * rfrac;
-                        }
-                        else
-                        {
-                            rtemp = ztemp1.Real % rfrac + layer * rfrac;
-                        }
+                        double rtemp = inverseAlpha ?
+                            ztemp1.Real % rfrac + (2 - layer) * rfrac :
+                            ztemp1.Real % rfrac + layer * rfrac;
 
                         ztemp2 = new Complex(rtemp, ztemp1.Imaginary * repeatPerTurn);
 
