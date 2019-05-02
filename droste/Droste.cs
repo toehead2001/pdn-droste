@@ -6,7 +6,7 @@ using PaintDotNet;
 using PaintDotNet.IndirectUI;
 using PaintDotNet.Effects;
 using PaintDotNet.PropertySystem;
-using MathNet.Numerics;
+using System.Numerics;
 
 namespace Droste
 {
@@ -137,12 +137,6 @@ namespace Droste
                                       Int32Util.ClampToByte(total_alpha));
         }
 
-        // My own version of NaturalLogarithm() that doesn't create a special case for real numbers
-        public static Complex MyNaturalLogarithm(Complex input)
-        {
-            return Complex.FromRealImaginary(0.5d * Math.Log(input.ModulusSquared), input.Argument);
-        }
-
         private void Render(Surface dst, Surface src, Rectangle rect)
         {
             Rectangle selection = EnvironmentParameters.GetSelection(src.Bounds).GetBoundsInt();
@@ -152,8 +146,8 @@ namespace Droste
             double rfrac = Math.Log(Amount2 / Amount1);
             double alpha = Math.Atan2(rfrac, Math.PI * 2);
             double f = Math.Cos(alpha);
-            Complex ialpha = Complex.FromRealImaginary(0, alpha);
-            Complex beta = f * ialpha.Exponential();
+            Complex ialpha = new Complex(0, alpha);
+            Complex beta = f * Complex.Exp(ialpha);
 
             Complex zin;
             Complex ztemp1;
@@ -176,13 +170,13 @@ namespace Droste
                 if (IsCancelRequested) return;
                 for (int x = rect.Left; x < rect.Right; ++x)
                 {
-                    zout = Complex.FromRealImaginary(x - CenterX, CenterY - y);
+                    zout = new Complex(x - CenterX, CenterY - y);
                     result = ColorBgra.Zero;
 
                     // see algorithm description here : http://www.josleys.com/articles/printgallery.htm
 
                     // inverse step 3 and inverse step 2 ==> output after step 1
-                    ztemp1 = MyNaturalLogarithm(zout) / beta;
+                    ztemp1 = Complex.Log(zout) / beta;
 
                     for (int layer = 0; layer < 3 && result.A < 255; layer++)
                     {
@@ -199,13 +193,13 @@ namespace Droste
                             rtemp = ztemp1.Real % rfrac + layer * rfrac;
                         }
 
-                        ztemp2 = Complex.FromRealImaginary(rtemp, ztemp1.Imag * Amount5);
+                        ztemp2 = new Complex(rtemp, ztemp1.Imaginary * Amount5);
 
                         // inverse step 1
-                        zin = Amount1 * ztemp2.Exponential();
+                        zin = Amount1 * Complex.Exp(ztemp2);
 
                         from_x = (float)(zin.Real + CenterX);
-                        from_y = (float)(CenterY - zin.Imag);
+                        from_y = (float)(CenterY - zin.Imaginary);
 
                         rotatedX = (float)((from_x - CenterX) * cos - (from_y - CenterY) * sin + CenterX);
                         rotatedY = (float)((from_y - CenterY) * cos - (from_x - CenterX) * -1.0 * sin + CenterY);
