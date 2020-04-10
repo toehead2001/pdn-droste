@@ -73,7 +73,7 @@ namespace Droste
             configUI.SetPropertyControlValue(PropertyNames.Center, ControlInfoPropertyNames.SliderSmallChangeY, 0.05);
             configUI.SetPropertyControlValue(PropertyNames.Center, ControlInfoPropertyNames.SliderLargeChangeY, 0.25);
             configUI.SetPropertyControlValue(PropertyNames.Center, ControlInfoPropertyNames.UpDownIncrementY, 0.01);
-            Rectangle selRect = EnvironmentParameters.GetSelection(EnvironmentParameters.SourceSurface.Bounds).GetBoundsInt();
+            Rectangle selRect = EnvironmentParameters.SelectionBounds;
             ImageResource imageRes = ImageResource.FromImage(EnvironmentParameters.SourceSurface.CreateAliasedBitmap(selRect));
             configUI.SetPropertyControlValue(PropertyNames.Center, ControlInfoPropertyNames.StaticImageUnderlay, imageRes);
             configUI.SetPropertyControlValue(PropertyNames.InverseAlpha, ControlInfoPropertyNames.DisplayName, "Inverse Transparency");
@@ -87,7 +87,7 @@ namespace Droste
 
         protected override void OnSetRenderInfo(PropertyBasedEffectConfigToken newToken, RenderArgs dstArgs, RenderArgs srcArgs)
         {
-            Rectangle selection = EnvironmentParameters.GetSelection(srcArgs.Bounds).GetBoundsInt();
+            Rectangle selection = EnvironmentParameters.SelectionBounds;
             double rmax = Math.Max(selection.Height, selection.Width);
 
             innerRadius = newToken.GetProperty<DoubleProperty>(PropertyNames.InnerRadius).Value * rmax;
@@ -139,7 +139,7 @@ namespace Droste
 
         private void Render(Surface dst, Surface src, Rectangle rect)
         {
-            Rectangle selection = EnvironmentParameters.GetSelection(src.Bounds).GetBoundsInt();
+            Rectangle selection = EnvironmentParameters.SelectionBounds;
             long CenterX = (long)((1.0 + center.First) * ((selection.Right - selection.Left) / 2) + selection.Left);
             long CenterY = (long)((1.0 + center.Second) * ((selection.Bottom - selection.Top) / 2) + selection.Top);
 
